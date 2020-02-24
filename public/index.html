@@ -1,10 +1,34 @@
 <!doctype html>
 <html>
 <head>
-    <title></title>
+    <title>Imageboard</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+    <header>
+        <h1>Hipstergram</h1>
+        <h3>Latest Images</h3>
+    </header>
+    
+    <div id="main">
+        <!-- <h2 @click="muffin">The best cohort is... {{cohort}}</h2>
+        <h2>Maths!!! 2 * 2 = {{2 * 2}}</h2>
+        <h2>My name is: {{name.first + " " + name.last}}</h2>
+        <h2>CAPITALIZE!: {{"allspice".toUpperCase()}}</h2>
+        <h2 v-if="seen">Can you see me?</h2>
+        <ul>
+            <li v-for="city in cities" @click="muffin(city.name)">{{city.name}}, {{city.country}}</li>
+        </ul> -->
+        <div id="image-container">
+            <div class="image-card" v-for="image in images">
+                <img :src="image.url">
+                <p>{{image.title}}</p>
+            </div>
+        </div>
+
+    </div>
     <script src="/js/vue.js"></script>
     <script src="/js/axios.min.js"></script>
+    <script src="/js/script.js"></script>
 </body>
 </html>
