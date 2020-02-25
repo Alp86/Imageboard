@@ -4,44 +4,58 @@
     new Vue({
         el: '#main',
         data: { // these properties are reactive
-            images: []
-            // cohort: "Allspice",
-            // name: {
-            //     first: "Alperen",
-            //     last: "Kan"
-            // },
-            // seen: true,
-            // cities: []
+            images: [],
+            // data properties will store the values of our input fields
+            title: "",
+            description: "",
+            username: "",
+            file: null
         },
         mounted: function() {
             var me = this;
-            axios.get("/images").then(function(response) {
-                console.log("get images:", response);
-                me.images = response.data;
-            });
-            // console.log("My Vue Component has mounted");
-            // this.cities.push("hello");
-            // console.log("This.cities after push:", this.cities);
-            // console.log("this.cities from data: ", this.cities);
-            // this.cities.pop();
-
-            // we need to store this in another variable so it doesnt
-            // get overwritten
-            // var me = this;
-            //
-            // axios.get("/cities").then(function(response) {
-            //     console.log("response from /cities:", response);
-            //     console.log("Berlin: ", response.data[0].name);
-            //     // console.log("this.cities:", this.cities);
-            //     // this.cities = response.data;
-            //     // response.data is where the info lives...
-            //     me.cities = response.data;
-            // });
+            axios.get("/images")
+                .then(function(response) {
+                    console.log("get images:", response);
+                    me.images = response.data;
+                })
+                .catch(function(error) {
+                    console.log("error in GET /images:", error);
+                });
         },
         methods: {
-            // muffin: function(cityName) {
-            //     console.log("Muffin is running!!!", cityName);
-            // }
+            handleClick: function(e) {
+                e.preventDefault();
+                console.log("this:", this);
+
+                var formData = new FormData();
+
+                formData.append("title", this.title);
+                formData.append("description", this.description);
+                formData.append("username", this.username);
+                formData.append("file", this.file);
+                var myData = this;
+                axios.post("/upload", formData)
+                    .then(function(response) {
+                        console.log("response from POST /upload:", response);
+                        if (response.data.success) {
+                            myData.images.unshift(response.data);
+                        } else {
+                            console.log("error in POST /upload response");
+                        }
+                    })
+                    .catch(function(error) {
+                        console.log("error in POST /upload:", error);
+                    });
+            },
+            handleChange: function(e) {
+                // this runs when user selects an img in the file input field
+
+                console.log("handleChange is running");
+                console.log("file:", e.target.files[0]);
+
+                this.file = e.target.files[0];
+                console.log("this:", this);
+            }
         }
     });
 

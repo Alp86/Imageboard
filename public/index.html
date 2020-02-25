@@ -24,6 +24,15 @@
         <ul>
             <li v-for="city in cities" @click="muffin(city.name)">{{city.name}}, {{city.country}}</li>
         </ul> -->
+
+        <form>
+            <input v-model="title" type="text" name="title" placeholder="title">
+            <input v-model="description" type="text" name="description" placeholder="description">
+            <input v-model="username" type="text" name="username" placeholder="username">
+            <input @change="handleChange" type="file" name="file" accept="image/*">
+            <button @click="handleClick">submit</button>
+        </form>
+
         <div id="image-container">
             <div class="image-card" v-for="image in images">
                 <img :src="image.url">
