@@ -42,3 +42,24 @@ exports.upload = (req, res, next) => {
             res.sendStatus(500);
         });
 };
+
+exports.deleteImageAWS = (req, res, next) => {
+
+    const filename = req.body.url.split("https://s3.amazonaws.com/spicedling/")[1];
+    console.log("filename:", filename);
+    
+    const promise = s3.deleteObject({
+        Bucket: "spicedling",
+        Key: filename
+    }).promise();
+
+    promise
+        .then(() => {
+            console.log("s3.deleteObject successfull");
+            next();
+        })
+        .catch(error => {
+            console.log("error in s3.deleteObject:", error);
+            res.sendStatus(500);
+        });
+};

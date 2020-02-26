@@ -16,14 +16,11 @@
     </header>
 
     <div id="main">
-        <!-- <h2 @click="muffin">The best cohort is... {{cohort}}</h2>
-        <h2>Maths!!! 2 * 2 = {{2 * 2}}</h2>
-        <h2>My name is: {{name.first + " " + name.last}}</h2>
-        <h2>CAPITALIZE!: {{"allspice".toUpperCase()}}</h2>
-        <h2 v-if="seen">Can you see me?</h2>
-        <ul>
-            <li v-for="city in cities" @click="muffin(city.name)">{{city.name}}, {{city.country}}</li>
-        </ul> -->
+        <my-component
+            v-if="id"
+            :id="id"
+            @close="handleClose"
+            ></my-component>
 
         <form>
             <input v-model="title" type="text" name="title" placeholder="title">
@@ -35,12 +32,44 @@
 
         <div id="image-container">
             <div class="image-card" v-for="image in images">
-                <img :src="image.url">
+                <img @click.stop="openModal(image.id)" :src="image.url">
                 <p>{{image.title}}</p>
+                <!-- <button >delete</button> -->
             </div>
         </div>
 
+
     </div>
+
+
+    <!-- Outside of main -->
+    <script id="my-component" type="text/x-template">
+        <div id="modal">
+            <div id="comment-container">
+                <p @click="closeModal" id="close">X</p>
+                <img :src="image.url">
+                <h1>{{ image.title }}</h1>
+                <h2>{{ image.description }}</h2>
+                <p>uploaded by {{ image.username}} on {{ image.created_at}}</p>
+
+                <form id="comment-form">
+                    <h3>Add a comment</h3>
+                    <input v-model="username" type="text" name="username" placeholder="username">
+                    <input v-model="comment" type="text" name="comment" placeholder="comment">
+                    <button @click.stop.prevent="handleClick">submit</button>
+                </form>
+
+                <div id="comments">
+                    <div class="comment" v-for="comment in comments">
+                        <h3>{{comment.comment}}</h3>
+                        <p>{{comment.username}}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
+
+
     <script src="/js/vue.js"></script>
     <script src="/js/axios.min.js"></script>
     <script src="/js/script.js"></script>

@@ -62,8 +62,67 @@ header {
     font-size: 14px;
 }
 
-img {
+.image-card img {
     width: 400px;
     height: 300px;
     border-radius: 5px;
+}
+
+#modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    /* z-index: 100; */
+}
+
+#modal::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    background-color: black;
+    opacity: .4;
+}
+
+#comment-container {
+    padding: 20px 50px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    height: 600px;
+    width: 600px;
+    overflow-y: scroll;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+}
+
+#close {
+    cursor: pointer;
+}
+
+#comment-container img {
+    width: 100%;
+}
+
+#comment-form {
+    margin: 10px 5px;
+    border: solid 1px lightgrey;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#comments {
+    border: solid 1px lightgrey;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.comment {
+    border-bottom: solid 1px lightgrey;
 }

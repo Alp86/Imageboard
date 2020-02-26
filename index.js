@@ -1,12 +1,14 @@
 const express = require("express");
 const app = express();
-const { getImages, insertImage } = require("./db");
+const { getImages, insertImage, deleteImage, getImage, getComments, insertComment } = require("./db");
 
 const multer = require('multer');
 const uidSafe = require('uid-safe');
 const path = require('path');
 const s3 = require("./s3");
-const config = require("./config")
+const config = require("./config");
+
+app.use(express.json());
 
 const diskStorage = multer.diskStorage({
     destination: function (req, file, callback) {
@@ -51,7 +53,7 @@ app.post("/upload", uploader.single("file"), s3.upload, (req, res) => {
         const filename = req.file.filename;
         const url = config.s3Url + filename;
         insertImage(url, username, title, description)
-            .then(result => {
+            .then(() => {
                 console.log("image insertion successfull");
                 res.json({
                     success: true,
@@ -63,12 +65,66 @@ app.post("/upload", uploader.single("file"), s3.upload, (req, res) => {
             })
             .catch(error => {
                 console.log("error in insertImage:", error);
-            })
+            });
     } else {
         res.json({
             success: false
         });
     }
+});
+
+app.post("/data", (req, res) => {
+
+    const imageId = req.body.id;
+    console.log("imageId:", imageId);
+    Promise.all([
+        getImage(imageId),
+        getComments(imageId)
+    ])
+        .then(results => {
+            const image = results[0].rows[0];
+            const comments = results[1].rows;
+            res.json([image, comments]);
+        })
+        .catch(error => {
+            console.log("error in Promise.all:", error);
+        });
+});
+
+app.post("/comment", (req, res) => {
+    // console.log(req.body);
+    // res.sendStatus(200);
+    const { comment, username, imageId } = req.body;
+    insertComment(comment, username, imageId)
+        .then(() => {
+            console.log("insertComment successfull");
+
+            res.json({
+                comment: comment,
+                username: username,
+                imageId: imageId
+            });
+        })
+        .catch(error => {
+            console.log("error in insertComment:", error);
+        });
+});
+
+app.post("/delete", s3.deleteImageAWS, (req, res) => {
+
+    deleteImage(req.body.url)
+        .then(() => {
+            console.log("deleteImage successfull");
+            res.json({
+                success: true
+            });
+        })
+        .catch(error => {
+            console.log("error in deleteImage", error);
+            res.json({
+                success: false
+            });
+        });
 });
 
 
