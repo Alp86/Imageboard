@@ -17,10 +17,14 @@
 
     <div id="main">
         <my-component
-            v-if="id"
             :id="id"
+            v-if="id"
+            :previd="previd"
+            :nextid="nextid"
             @close="handleClose"
             @delete="handleDelete"
+            @prev="handlePrev"
+            @next="handleNext"
             ></my-component>
 
         <!-- <div id="form-container">
@@ -59,8 +63,20 @@
         <div id="modal">
             <div id="comment-container">
 
-                <div id="close-container">
-                    <p @click="closeModal" id="close">X</p>
+                <div id="controls-container">
+                    <!-- <a :href="">prev</a>
+                    <a :href="">next</a> -->
+                    <div>
+                        <!-- <span v-if="previd" @click="emitPrev">prev</span> -->
+                        <a v-if="previd" @click="emitPrev" :href="'#' + previd">prev</a>
+                    </div>
+                    <div>
+                        <a v-if="nextid" @click="emitNext" :href="'#' + nextid">next</a>
+                        <!-- <span v-if="nextid" @click="emitNext">next</span> -->
+                    </div>
+                    <div>
+                        <span @click="closeModal" id="close">X</span>
+                    </div>
                 </div>
 
                 <img :src="image.url">
@@ -72,7 +88,7 @@
                     <h3>Add a comment</h3>
                     <input v-model="username" type="text" name="username" placeholder="username">
                     <input v-model="comment" type="text" name="comment" placeholder="comment">
-                    <button @click.stop.prevent="submitComment">submit</button>
+                    <button @click.prevent="submitComment">submit</button>
                 </form>
 
                 <div id="comments">

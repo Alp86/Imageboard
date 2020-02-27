@@ -2,7 +2,7 @@
 (function() {
     Vue.component("my-component", {
         template: "#my-component",
-        props: ["id"],
+        props: ["id", "previd", "nextid"],
         data: function() {
             return {
                 comments: [],
@@ -13,20 +13,6 @@
         },
         mounted: function() {
             this.getData();
-            // console.log("vue.component mounted");
-            // console.log("this.id:", this.id);
-            // var me = this;
-            //
-            // axios.post("/data", { id: me.id })
-            //     .then(function(response) {
-            //         // console.log(response);
-            //         me.image = response.data[0];
-            //         me.comments = response.data[1];
-            //         console.log("axios.post /data", me);
-            //     })
-            //     .catch(function(error) {
-            //         console.log("error in POST /getdata:", error);
-            //     });
         },
         watch: {
             id: function() {
@@ -73,6 +59,14 @@
 
             emitDelete: function() {
                 this.$emit("delete");
+            },
+
+            emitPrev: function() {
+                this.$emit("prev");
+            },
+
+            emitNext: function() {
+                this.$emit("next");
             }
         }
     });
@@ -82,6 +76,8 @@
         data: { // these properties are reactive
             images: [],
             id: location.hash.slice(1),
+            previd: null,
+            nextid: null,
             lastId: "",
             lowestId: "",
             more: null,
@@ -91,31 +87,71 @@
             username: "",
             file: null
         },
+        watch: {
+            id: function() {
+                this.prevNext();
+                // console.log("id has changed");
+                // for (var i = 0; i < this.images.length; i++) {
+                //     if (this.images[i].id == this.id) {
+                //         if (this.images[i+1]) {
+                //             this.previd = this.images[i+1].id;
+                //         } else {
+                //             this.previd = null;
+                //         }
+                //         if (this.images[i-1]) {
+                //             this.nextid = this.images[i-1].id;
+                //         } else {
+                //             this.nextid = null;
+                //         }
+                //     }
+                // }
+            }
+        },
         mounted: function() {
             console.log("vue instance mounted");
             var me = this;
+
             axios.get("/images")
                 .then(function(response) {
-                    console.log("get images:", response);
                     me.images = response.data;
                     me.lastId = me.images[me.images.length-1].id;
                     me.lowestId = me.images[0].lowestId;
 
                     // checking if there are more images
-
                     if (me.lastId > me.lowestId) {
                         me.more = true;
                     }
+
+                    addEventListener("hashchange", function() {
+                        me.id = location.hash.slice(1);
+                    });
+
+                    me.prevNext();
                 })
                 .catch(function(error) {
                     console.log("error in GET /images:", error);
                 });
-            addEventListener("hashchange", function() {
-                console.log("hashchange:", location.hash);
-                me.id = location.hash.slice(1);
-            });
+
+
         },
         methods: {
+            prevNext: function() {
+                for (var i = 0; i < this.images.length; i++) {
+                    if (this.images[i].id == this.id) {
+                        if (this.images[i+1]) {
+                            this.previd = this.images[i+1].id;
+                        } else {
+                            this.previd = null;
+                        }
+                        if (this.images[i-1]) {
+                            this.nextid = this.images[i-1].id;
+                        } else {
+                            this.nextid = null;
+                        }
+                    }
+                }
+            },
+
             submitImage: function() {
                 console.log("this:", this);
 
@@ -185,8 +221,7 @@
 
                         for (var i = 0; i < me.images.length; i++) {
                             if (me.images[i].id == me.id) {
-                                me.images.splice(i, 1);
-                                console.log("me.images after splice:", me.images);
+                                return me.images.splice(i, 1);
                             }
                         }
 
@@ -194,6 +229,14 @@
                     .catch(function(error) {
                         console.log("error in POST /delete:", error);
                     });
+            },
+
+            handlePrev: function() {
+                this.id = this.previd;
+            },
+
+            handleNext: function() {
+                this.id = this.nextid;
             }
         }
     });

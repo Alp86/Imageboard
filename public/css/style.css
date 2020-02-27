@@ -118,12 +118,17 @@ header {
     flex-direction: column;
 }
 
-#close-container {
+#controls-container {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
 }
 
-#close {
+#controls-container div {
+    width: 40px;
+    padding: 5px 0;
+}
+
+#controls-container span {
     cursor: pointer;
     font-weight: bold;
 }
