@@ -1,5 +1,8 @@
 const aws = require('aws-sdk');
 const fs = require('fs');
+const { getImage } = require("./db");
+const { app } = require("./index");
+
 
 let secrets;
 if (process.env.NODE_ENV == 'production') {
@@ -43,23 +46,34 @@ exports.upload = (req, res, next) => {
         });
 };
 
-exports.deleteImageAWS = (req, res, next) => {
+exports.deleteImage = (req, res, next) => {
 
-    const filename = req.body.url.split("https://s3.amazonaws.com/spicedling/")[1];
-    console.log("filename:", filename);
-    
-    const promise = s3.deleteObject({
-        Bucket: "spicedling",
-        Key: filename
-    }).promise();
+    console.log("deleteImage req.body:", req.body);
 
-    promise
-        .then(() => {
-            console.log("s3.deleteObject successfull");
-            next();
+    const { imageId } = req.body;
+    getImage(imageId)
+        .then(({rows}) => {
+            // console.log("rows:", rows);
+            const filename = rows[0].url.split("https://s3.amazonaws.com/spicedling/")[1];
+            console.log("filename:", filename);
+
+            const promise = s3.deleteObject({
+                Bucket: "spicedling",
+                Key: filename
+            }).promise();
+
+            promise
+                .then(response => {
+                    console.log("s3.deleteObject successfull:", response);
+                    next();
+                })
+                .catch(error => {
+                    console.log("error in s3.deleteObject:", error);
+                    res.sendStatus(500);
+                });
+
         })
         .catch(error => {
-            console.log("error in s3.deleteObject:", error);
-            res.sendStatus(500);
+            console.log("error in getImage s3:", error);
         });
 };

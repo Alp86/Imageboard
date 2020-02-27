@@ -9,14 +9,16 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center
+    width: 100%;
 }
 
 header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 100vw;
-    background-color: #b9cced;
+    /* width: 100vw; */
+    border-bottom: solid 1px lightgrey;
+    /* background-color: #b9cced; */
 }
 
 #banner {
@@ -41,6 +43,20 @@ header {
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+#form-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 1300px;
+    padding-bottom: 20px;
+    margin: 20px 0;
+    border-bottom: solid 1px lightgrey;
+}
+
+#form-field {
+    display: flex;
 }
 
 #image-container {
@@ -102,8 +118,14 @@ header {
     flex-direction: column;
 }
 
+#close-container {
+    display: flex;
+    justify-content: flex-end;
+}
+
 #close {
     cursor: pointer;
+    font-weight: bold;
 }
 
 #comment-container img {

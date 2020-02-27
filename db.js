@@ -6,10 +6,34 @@ const db = spicedPg(
 
 exports.getImages = () => {
     return db.query(
-        `SELECT * FROM images
-        ORDER BY created_at DESC`
+        `
+        SELECT *, (
+            SELECT id FROM images
+            ORDER BY id ASC
+            LIMIT 1
+        ) AS "lowestId" FROM images
+        ORDER BY id DESC
+        LIMIT 9
+        `
     );
 };
+
+exports.getMoreImages = lastId => {
+    return db.query(
+        `
+        SELECT *, (
+            SELECT id FROM images
+            ORDER BY id ASC
+            LIMIT 1
+        ) AS "lowestId" FROM images
+        WHERE id < $1
+        ORDER BY id DESC
+        LIMIT 9
+        `,
+        [lastId]
+    );
+};
+
 
 exports.insertImage = (url, username, title, description) => {
     return db.query(
@@ -21,13 +45,13 @@ exports.insertImage = (url, username, title, description) => {
     );
 };
 
-exports.deleteImage = (url) => {
+exports.deleteImage = (imageId) => {
     return db.query(
         `
         DELETE FROM images
-        WHERE url = $1
+        WHERE id = $1
         `,
-        [url]
+        [imageId]
     );
 };
 

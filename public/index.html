@@ -20,24 +20,36 @@
             v-if="id"
             :id="id"
             @close="handleClose"
+            @delete="handleDelete"
             ></my-component>
 
-        <form>
-            <input v-model="title" type="text" name="title" placeholder="title">
-            <input v-model="description" type="text" name="description" placeholder="description">
-            <input v-model="username" type="text" name="username" placeholder="username">
-            <input @change="handleChange" type="file" name="file" accept="image/*">
-            <button @click="handleClick">submit</button>
-        </form>
+        <!-- <div id="form-container">
+            <h3>upload an image</h3> -->
+            <form id="form-field">
+                <input v-model="title" type="text" name="title" placeholder="title">
+                <input v-model="description" type="text" name="description" placeholder="description">
+                <input v-model="username" type="text" name="username" placeholder="username">
+                <input @change="readFile" type="file" name="file" accept="image/*">
+                <button @click.prevent="submitImage">submit</button>
+            </form>
+        <!-- </div> -->
 
         <div id="image-container">
-            <div class="image-card" v-for="image in images">
-                <img @click.stop="openModal(image.id)" :src="image.url">
-                <p>{{image.title}}</p>
-                <!-- <button >delete</button> -->
+            <div v-for="image in images">
+                <a :href="'#' + image.id">
+                    <div class="image-card">
+                        <img :src="image.url">
+                        <p>{{image.title}}</p>
+                    </div>
+                </a>
             </div>
         </div>
 
+        <div v-if="more" id="more">
+            <form >
+                <button @click.prevent="getMoreImages" id="more-button">load more</button>
+            </form>
+        </div>
 
     </div>
 
@@ -46,7 +58,11 @@
     <script id="my-component" type="text/x-template">
         <div id="modal">
             <div id="comment-container">
-                <p @click="closeModal" id="close">X</p>
+
+                <div id="close-container">
+                    <p @click="closeModal" id="close">X</p>
+                </div>
+
                 <img :src="image.url">
                 <h1>{{ image.title }}</h1>
                 <h2>{{ image.description }}</h2>
@@ -56,7 +72,7 @@
                     <h3>Add a comment</h3>
                     <input v-model="username" type="text" name="username" placeholder="username">
                     <input v-model="comment" type="text" name="comment" placeholder="comment">
-                    <button @click.stop.prevent="handleClick">submit</button>
+                    <button @click.stop.prevent="submitComment">submit</button>
                 </form>
 
                 <div id="comments">
@@ -65,6 +81,10 @@
                         <p>{{comment.username}}</p>
                     </div>
                 </div>
+
+                <form>
+                    <button @click.prevent="emitDelete" id="delete-button">delete</button>
+                </form>
             </div>
         </div>
     </script>

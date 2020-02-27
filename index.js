@@ -1,6 +1,9 @@
 const express = require("express");
 const app = express();
-const { getImages, insertImage, deleteImage, getImage, getComments, insertComment } = require("./db");
+const {
+    getImages, insertImage, deleteImage, getImage, getComments,
+    insertComment, getMoreImages
+} = require("./db");
 
 const multer = require('multer');
 const uidSafe = require('uid-safe');
@@ -9,6 +12,7 @@ const s3 = require("./s3");
 const config = require("./config");
 
 app.use(express.json());
+exports.app = app;
 
 const diskStorage = multer.diskStorage({
     destination: function (req, file, callback) {
@@ -34,9 +38,9 @@ app.use(express.static("public"));
 app.get("/images", (req, res) => {
     console.log("GET request for /images received");
     getImages()
-        .then(result => {
-            console.log(result);
-            const images = result.rows;
+        .then(results => {
+            console.log("GET /images results:", results);
+            const images = results.rows;
             res.json(images);
         })
         .catch(err => {
@@ -110,20 +114,34 @@ app.post("/comment", (req, res) => {
         });
 });
 
-app.post("/delete", s3.deleteImageAWS, (req, res) => {
+app.post("/moreimages", (req, res) => {
+    console.log("POST /moreimages request received");
+    console.log(req.body);
+    const { lastId } = req.body;
 
-    deleteImage(req.body.url)
+    getMoreImages(lastId)
+        .then( ({ rows }) => {
+            console.log("getMoreImages results:", rows);
+            res.json(rows);
+        })
+        .catch(error => {
+            console.log("error in getMoreImages:", error);
+        });
+});
+
+app.post("/delete", s3.deleteImage, (req, res) => {
+
+    const { imageId } = req.body;
+    
+    deleteImage(imageId)
         .then(() => {
-            console.log("deleteImage successfull");
+            console.log("deleteImage psql successfull");
             res.json({
-                success: true
+                imageId: imageId
             });
         })
         .catch(error => {
             console.log("error in deleteImage", error);
-            res.json({
-                success: false
-            });
         });
 });
 
