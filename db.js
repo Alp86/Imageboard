@@ -40,6 +40,7 @@ exports.insertImage = (url, username, title, description) => {
         `
         INSERT INTO images (url, username, title, description)
         VALUES ($1, $2, $3, $4)
+        RETURNING id
         `,
         [url, username, title, description]
     );
@@ -58,7 +59,12 @@ exports.deleteImage = (imageId) => {
 exports.getImage = (imageId) => {
     return db.query(
         `
-        SELECT * FROM images
+        SELECT * FROM (
+            SELECT *,
+            lag(id, 1) OVER (ORDER BY id) AS "previd",
+            lead(id, 1) OVER (ORDER BY id) AS "nextid"
+            FROM images
+        ) x
         WHERE id = $1
         `,
         [imageId]
@@ -82,5 +88,35 @@ exports.insertComment = (comment, username, imageId) => {
         VALUES ($1, $2, $3)
         `,
         [username, comment, imageId]
+    );
+};
+
+exports.insertTags = (tag, imageId) => {
+    return db.query(
+        `
+        INSERT INTO tags (tag, image_id)
+        VALUES ($1, $2)
+        `,
+        [tag, imageId]
+    );
+};
+
+exports.getTags = (imageId) => {
+    return db.query(
+        `
+        SELECT tag FROM tags
+        WHERE image_id = $1
+        `,
+        [imageId]
+    );
+};
+
+exports.getImagesByTag = (tag) => {
+    return db.query(
+        `
+        SELECT image_id FROM tags
+        WHERE LOWER(tag) = LOWER($1)
+        `,
+        [tag]
     );
 };

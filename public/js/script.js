@@ -2,11 +2,13 @@
 (function() {
     Vue.component("my-component", {
         template: "#my-component",
-        props: ["id", "previd", "nextid"],
+        // props: ["id", "previd", "nextid"],
+        props: ["id"],
         data: function() {
             return {
                 comments: [],
                 image: {},
+                tags: [],
                 username: "",
                 comment: "",
             };
@@ -29,6 +31,7 @@
                         // console.log(response);
                         me.image = response.data[0];
                         me.comments = response.data[1];
+                        me.tags = response.data[2];
                         console.log("axios.post /data", me);
                     })
                     .catch(function(error) {
@@ -76,8 +79,8 @@
         data: { // these properties are reactive
             images: [],
             id: location.hash.slice(1),
-            previd: null,
-            nextid: null,
+            // previd: null,
+            // nextid: null,
             lastId: "",
             lowestId: "",
             more: null,
@@ -85,28 +88,14 @@
             title: "",
             description: "",
             username: "",
+            tags: "",
             file: null
         },
-        watch: {
-            id: function() {
-                this.prevNext();
-                // console.log("id has changed");
-                // for (var i = 0; i < this.images.length; i++) {
-                //     if (this.images[i].id == this.id) {
-                //         if (this.images[i+1]) {
-                //             this.previd = this.images[i+1].id;
-                //         } else {
-                //             this.previd = null;
-                //         }
-                //         if (this.images[i-1]) {
-                //             this.nextid = this.images[i-1].id;
-                //         } else {
-                //             this.nextid = null;
-                //         }
-                //     }
-                // }
-            }
-        },
+        // watch: {
+        //     id: function() {
+        //         this.prevNext();
+        //     }
+        // },
         mounted: function() {
             console.log("vue instance mounted");
             var me = this;
@@ -123,53 +112,75 @@
                     }
 
                     addEventListener("hashchange", function() {
-                        me.id = location.hash.slice(1);
+                        var hashId = location.hash.slice(1);
+                        if ( Number.isInteger(parseInt(hashId) ) ) {
+                            for (var i = 0; i < me.images.length; i++) {
+                                if (hashId == me.images[i].id) {
+                                    return me.id = hashId;
+                                }
+                            }
+                            return me.handleClose();
+                        } else {
+                            // request tagged images
+                            console.log("request images tagged with:", hashId );
+                            me.getImagesByTag(hashId);
+                        }
                     });
-
-                    me.prevNext();
+                    // me.prevNext();
                 })
                 .catch(function(error) {
                     console.log("error in GET /images:", error);
                 });
-
-
         },
         methods: {
-            prevNext: function() {
-                for (var i = 0; i < this.images.length; i++) {
-                    if (this.images[i].id == this.id) {
-                        if (this.images[i+1]) {
-                            this.previd = this.images[i+1].id;
-                        } else {
-                            this.previd = null;
-                        }
-                        if (this.images[i-1]) {
-                            this.nextid = this.images[i-1].id;
-                        } else {
-                            this.nextid = null;
-                        }
-                    }
-                }
+            // prevNext: function() {
+            //     for (var i = 0; i < this.images.length; i++) {
+            //         if (this.images[i].id == this.id) {
+            //             if (this.images[i+1]) {
+            //                 this.previd = this.images[i+1].id;
+            //             } else {
+            //                 this.previd = null;
+            //             }
+            //             if (this.images[i-1]) {
+            //                 this.nextid = this.images[i-1].id;
+            //             } else {
+            //                 this.nextid = null;
+            //             }
+            //         }
+            //     }
+            // },
+            getImagesByTag: function(tag) {
+                console.log("getting images by tag");
+                var me = this;
+                axios.post("/imagesbytag", {tag: tag})
+                    .then(function(response) {
+                        me.images = response.data;
+                    })
+                    .catch(function(error) {
+                        console.log("error in POST /imagesbytag:", error);
+                    });
             },
 
             submitImage: function() {
-                console.log("this:", this);
-
                 var formData = new FormData();
-
                 formData.append("title", this.title);
                 formData.append("description", this.description);
                 formData.append("username", this.username);
+                formData.append("tags", this.tags);
                 formData.append("file", this.file);
-                var myData = this;
+
+                var me = this;
+
                 axios.post("/upload", formData)
                     .then(function(response) {
                         console.log("response from POST /upload:", response);
-                        if (response.data.success) {
-                            myData.images.unshift(response.data);
-                        } else {
-                            console.log("error in POST /upload response");
-                        }
+                        me.title = "";
+                        me.username = "";
+                        me.description = "";
+                        me.tags = "";
+                        me.file = null;
+
+                        me.images.unshift(response.data);
                     })
                     .catch(function(error) {
                         console.log("error in POST /upload:", error);

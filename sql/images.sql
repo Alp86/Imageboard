@@ -1,5 +1,6 @@
 DROP TABLE IF EXISTS comments;
 DROP TABLE IF EXISTS images;
+DROP TABLE IF EXISTS tags;
 
 CREATE TABLE images(
     id SERIAL PRIMARY KEY,
@@ -12,9 +13,16 @@ CREATE TABLE images(
 
 CREATE TABLE comments (
       id SERIAL PRIMARY KEY,
-      username VARCHAR(255) NOT NULL,
-      comment VARCHAR(255) NOT NULL,
-      image_id INT NOT NULL REFERENCES images(id),
+      username VARCHAR NOT NULL,
+      comment VARCHAR NOT NULL,
+      image_id INT NOT NULL REFERENCES images(id) ON DELETE CASCADE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE tags (
+      id SERIAL PRIMARY KEY,
+      tag TEXT,
+      image_id INT NOT NULL REFERENCES images(id) ON DELETE CASCADE,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
