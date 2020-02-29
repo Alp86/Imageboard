@@ -2,7 +2,8 @@ const express = require("express");
 const app = express();
 const {
     getImages, insertImage, deleteImage, getImage, getComments,
-    insertComment, getMoreImages, insertTags, getTags, getImagesByTag
+    insertComment, getMoreImages, insertTags, getTags,
+    getImagesByTag, getMoreImagesByTag
 } = require("./db");
 
 const multer = require('multer');
@@ -35,16 +36,32 @@ const uploader = multer({
 // this serves all html/css/front end js requests!
 app.use(express.static("public"));
 
-app.get("/images", (req, res) => {
+app.post("/images", (req, res) => {
     console.log("GET request for /images received");
-    getImages()
-        .then( ({ rows }) => {
-            console.log("GET /images results:", rows);
-            res.json(rows);
-        })
-        .catch(err => {
-            console.log("error in getImages:", err);
-        });
+
+    const { tag } = req.body;
+    console.log("tag:", tag);
+
+    if (tag) {
+        getImagesByTag(tag)
+            .then( ({ rows }) => {
+                console.log("GET /images results:", rows);
+                res.json(rows);
+            })
+            .catch(err => {
+                console.log("error in getImages:", err);
+            });
+    } else {
+        getImages()
+            .then( ({ rows }) => {
+                console.log("GET /images results:", rows);
+                res.json(rows);
+            })
+            .catch(err => {
+                console.log("error in getImages:", err);
+            });
+    }
+
 });
 
 app.post("/upload", uploader.single("file"), s3.upload, (req, res) => {
@@ -142,16 +159,28 @@ app.post("/comment", (req, res) => {
 app.post("/moreimages", (req, res) => {
     console.log("POST /moreimages request received");
     console.log(req.body);
-    const { lastId } = req.body;
+    const { tag, lastId } = req.body;
 
-    getMoreImages(lastId)
-        .then( ({ rows }) => {
-            console.log("getMoreImages results:", rows);
-            res.json(rows);
-        })
-        .catch(error => {
-            console.log("error in getMoreImages:", error);
-        });
+    if (tag) {
+        getMoreImagesByTag(tag, lastId)
+            .then( ({ rows }) => {
+                console.log("getMoreImages results:", rows);
+                res.json(rows);
+            })
+            .catch(error => {
+                console.log("error in getMoreImages:", error);
+            });
+    } else {
+        getMoreImages(lastId)
+            .then( ({ rows }) => {
+                console.log("getMoreImages results:", rows);
+                res.json(rows);
+            })
+            .catch(error => {
+                console.log("error in getMoreImages:", error);
+            });
+
+    }
 });
 
 app.post("/delete", s3.deleteImage, (req, res) => {

@@ -18,6 +18,29 @@ exports.getImages = () => {
     );
 };
 
+exports.getImagesByTag = (tag) => {
+    return db.query(
+        `
+        SELECT images.*, tags.tag, tags.image_id,
+            (
+                SELECT images.id FROM images
+                JOIN tags
+                ON images.id = tags.image_id
+                WHERE tags.tag = $1
+                ORDER BY images.id ASC
+                LIMIT 1
+            ) AS "lowestId"
+        FROM images
+        JOIN tags
+        ON images.id = tags.image_id
+        WHERE tags.tag = $1
+        ORDER BY id DESC
+        LIMIT 9
+        `,
+        [tag]
+    );
+};
+
 exports.getMoreImages = lastId => {
     return db.query(
         `
@@ -34,6 +57,29 @@ exports.getMoreImages = lastId => {
     );
 };
 
+exports.getMoreImagesByTag = (tag, lastId) => {
+    return db.query(
+        `
+        SELECT images.*, tags.tag, tags.image_id,
+            (
+                SELECT images.id FROM images
+                JOIN tags
+                ON images.id = tags.image_id
+                WHERE tags.tag = $1
+                ORDER BY images.id ASC
+                LIMIT 1
+            ) AS "lowestId"
+        FROM images
+        JOIN tags
+        ON images.id = tags.image_id
+        WHERE tags.tag = $1
+        WHERE images.id < $2
+        ORDER BY id DESC
+        LIMIT 9
+        `,
+        [tag, lastId]
+    );
+};
 
 exports.insertImage = (url, username, title, description) => {
     return db.query(
@@ -111,12 +157,12 @@ exports.getTags = (imageId) => {
     );
 };
 
-exports.getImagesByTag = (tag) => {
-    return db.query(
-        `
-        SELECT image_id FROM tags
-        WHERE LOWER(tag) = LOWER($1)
-        `,
-        [tag]
-    );
-};
+// exports.getImagesByTag = (tag) => {
+//     return db.query(
+//         `
+//         SELECT image_id FROM tags
+//         WHERE LOWER(tag) = LOWER($1)
+//         `,
+//         [tag]
+//     );
+// };

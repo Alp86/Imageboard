@@ -2,8 +2,7 @@
 (function() {
     Vue.component("my-component", {
         template: "#my-component",
-        // props: ["id", "previd", "nextid"],
-        props: ["id"],
+        props: ["id", "valid"],
         data: function() {
             return {
                 comments: [],
@@ -14,6 +13,7 @@
             };
         },
         mounted: function() {
+            console.log("component mounted");
             this.getData();
         },
         watch: {
@@ -28,14 +28,21 @@
 
                 axios.post("/data", { id: me.id })
                     .then(function(response) {
-                        // console.log(response);
-                        me.image = response.data[0];
-                        me.comments = response.data[1];
-                        me.tags = response.data[2];
-                        console.log("axios.post /data", me);
+                        console.log("response.data:", response.data);
+                        if (response.data[0]) {
+                            me.emitValid();
+                            me.image = response.data[0];
+                            me.comments = response.data[1];
+                            me.tags = response.data[2];
+                            console.log("axios.post /data", me);
+                        } else {
+                            me.closeModal();
+                        }
+
                     })
                     .catch(function(error) {
                         console.log("error in POST /getdata:", error);
+                        me.closeModal();
                     });
             },
 
@@ -70,19 +77,25 @@
 
             emitNext: function() {
                 this.$emit("next");
+            },
+            emitValid: function() {
+                this.$emit("valid");
             }
         }
     });
 
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////
     new Vue({
         el: '#main',
         data: { // these properties are reactive
             images: [],
             id: location.hash.slice(1),
-            // previd: null,
-            // nextid: null,
+            valid: "",
             lastId: "",
             lowestId: "",
+            tag: null,
             more: null,
             // data properties will store the values of our input fields
             title: "",
@@ -91,73 +104,54 @@
             tags: "",
             file: null
         },
-        // watch: {
-        //     id: function() {
-        //         this.prevNext();
-        //     }
-        // },
+        watch: {
+            tag: function() {
+                if (this.tag) {
+                    this.id = null;
+                    this.more = null;
+                    this.getImages();
+                }
+            }
+        },
         mounted: function() {
             console.log("vue instance mounted");
-            var me = this;
+            // check if id or tag
+            if ( location.hash.slice(1) && !Number.isInteger(parseInt(location.hash.slice(1))) ) {
+                this.tag = location.hash.slice(1);
+            }
+            this.getImages(true);
 
-            axios.get("/images")
-                .then(function(response) {
-                    me.images = response.data;
-                    me.lastId = me.images[me.images.length-1].id;
-                    me.lowestId = me.images[0].lowestId;
-
-                    // checking if there are more images
-                    if (me.lastId > me.lowestId) {
-                        me.more = true;
-                    }
-
-                    addEventListener("hashchange", function() {
-                        var hashId = location.hash.slice(1);
-                        if ( Number.isInteger(parseInt(hashId) ) ) {
-                            for (var i = 0; i < me.images.length; i++) {
-                                if (hashId == me.images[i].id) {
-                                    return me.id = hashId;
-                                }
-                            }
-                            return me.handleClose();
-                        } else {
-                            // request tagged images
-                            console.log("request images tagged with:", hashId );
-                            me.getImagesByTag(hashId);
-                        }
-                    });
-                    // me.prevNext();
-                })
-                .catch(function(error) {
-                    console.log("error in GET /images:", error);
-                });
         },
         methods: {
-            // prevNext: function() {
-            //     for (var i = 0; i < this.images.length; i++) {
-            //         if (this.images[i].id == this.id) {
-            //             if (this.images[i+1]) {
-            //                 this.previd = this.images[i+1].id;
-            //             } else {
-            //                 this.previd = null;
-            //             }
-            //             if (this.images[i-1]) {
-            //                 this.nextid = this.images[i-1].id;
-            //             } else {
-            //                 this.nextid = null;
-            //             }
-            //         }
-            //     }
-            // },
-            getImagesByTag: function(tag) {
-                console.log("getting images by tag");
+            getImages: function(listen=false) {
                 var me = this;
-                axios.post("/imagesbytag", {tag: tag})
+                axios.post("/images", {tag: me.tag})
                     .then(function(response) {
                         me.images = response.data;
+                        me.lastId = me.images[me.images.length-1].id;
+                        me.lowestId = me.images[0].lowestId;
+
+                        // checking if there are more images
+                        if (me.lastId > me.lowestId) {
+                            me.more = true;
+                        }
+
+                        if (listen) {
+                            addEventListener("hashchange", function() {
+                                if (!location.hash) {
+                                    me.handleClose();
+                                    me.getImages(false);
+                                } else if (Number.isInteger(parseInt(location.hash.slice(1)))) {
+                                    me.tag = null;
+                                    me.id = location.hash.slice(1);
+                                } else {
+                                    me.tag = location.hash.slice(1);
+                                }
+                            });
+                        }
                     })
                     .catch(function(error) {
-                        console.log("error in POST /imagesbytag:", error);
+                        console.log("error in GET /images:", error);
                     });
             },
 
@@ -197,6 +191,7 @@
             },
 
             handleClose: function() {
+                this.valid = null;
                 this.id = null;
                 history.replaceState(null, null, " ");
             },
@@ -204,7 +199,10 @@
             getMoreImages: function() {
                 console.log("loading more images");
                 var me = this;
-                axios.post("/moreimages", { lastId: me.lastId })
+                axios.post("/moreimages", {
+                    tag: me.tag,
+                    lastId: me.lastId
+                })
                     .then(function(response) {
                         console.log("getMoreImages:", response.data);
                         me.images.push.apply(me.images, response.data);
@@ -232,6 +230,7 @@
 
                         for (var i = 0; i < me.images.length; i++) {
                             if (me.images[i].id == me.id) {
+                                me.handleClose();
                                 return me.images.splice(i, 1);
                             }
                         }
@@ -248,6 +247,10 @@
 
             handleNext: function() {
                 this.id = this.nextid;
+            },
+
+            handleValid: function() {
+                this.valid = true;
             }
         }
     });

@@ -19,10 +19,13 @@
         <my-component
             :id="id"
             v-if="id"
+            :valid="valid"
+            v-if="valid"
             @close="handleClose"
             @delete="handleDelete"
             @prev="handlePrev"
             @next="handleNext"
+            @valid="handleValid"
             ></my-component>
 
             <form id="form-field">
@@ -56,6 +59,7 @@
 
     <!-- Outside of main -->
     <script id="my-component" type="text/x-template">
+    <div v-if="image">
         <div id="modal">
             <div id="comment-container">
 
@@ -102,6 +106,7 @@
                 </form>
             </div>
         </div>
+    </div>
     </script>
 
 
