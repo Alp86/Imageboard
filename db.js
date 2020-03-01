@@ -117,6 +117,26 @@ exports.getImage = (imageId) => {
     );
 };
 
+exports.getImageByTag = (imageId, tag) => {
+    return db.query(
+        `
+        SELECT *
+        FROM (
+            SELECT images.*,
+                lag(images.id, 1) OVER (ORDER BY images.id) AS "previd",
+                lead(images.id, 1) OVER (ORDER BY images.id) AS "nextid"
+            FROM images
+            JOIN tags
+            ON images.id = tags.image_id
+            WHERE tags.tag = $2
+            ORDER BY images.id DESC
+        ) x
+        WHERE id = $1
+        `,
+        [imageId, tag]
+    );
+};
+
 exports.getComments = (imageId) => {
     return db.query(
         `

@@ -5,37 +5,52 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <header>
-        <div id="banner">
-            <img id=icon src="/hipster.png">
-            <div id="title">
-                <h1>Hipstergram</h1>
-                <h3>Latest Images</h3>
-            </div>
-        </div>
-    </header>
 
     <div id="main">
+        <header>
+            <div id="banner" @click="reset">
+                <img id=icon src="/hipster.png">
+                <div id="title">
+                    <h1>hipstergram</h1>
+                </div>
+            </div>
+        </header>
+
         <my-component
             :id="id"
             v-if="id"
             :valid="valid"
             v-if="valid"
+            :tag="tag"
             @close="handleClose"
             @delete="handleDelete"
             @prev="handlePrev"
             @next="handleNext"
             @valid="handleValid"
-            ></my-component>
+        ></my-component>
 
-            <form id="form-field">
-                <input v-model="title" type="text" name="title" placeholder="title">
-                <input v-model="description" type="text" name="description" placeholder="description">
-                <input v-model="username" type="text" name="username" placeholder="username">
-                <input v-model="tags" type="text" name="tags" placeholder="tags">
-                <input @change="readFile" type="file" name="file" accept="image/*">
-                <button @click.prevent="submitImage">submit</button>
-            </form>
+        <div v-if="!tag" id="inputs">
+
+            <div class="inputs">
+                <input v-model="title" type="text" name="title" placeholder="title" autocomplete="off"/>
+                <input v-model="description" type="text" name="description" placeholder="description" autocomplete="off"/>
+                <input v-model="username" type="text" name="username" placeholder="username" autocomplete="off"/>
+                <input v-model="tags" type="text" name="tags" placeholder="tags" autocomplete="off"/>
+            </div>
+
+            <div class="inputs">
+                <input @change="readFile" type="file" name="file" id="file" class="inputfile" />
+                <label id="select-image" for="file">select image</label>
+                <button id="upload-button" @click.prevent="submitImage">upload</button>
+            </div>
+
+            <div class="inputs">
+            </div>
+        </div>
+
+        <div v-if="tag" id="tag-search">
+            <h3>showing results for: #{{tag}}</h3>
+        </div>
 
         <div id="image-container">
             <div v-for="image in images">
@@ -64,15 +79,11 @@
             <div id="comment-container">
 
                 <div id="controls-container">
-                    <!-- <a :href="">prev</a>
-                    <a :href="">next</a> -->
                     <div>
-                        <!-- <span v-if="previd" @click="emitPrev">prev</span> -->
-                        <a v-if="image.previd" @click="emitPrev" :href="'#' + image.previd">prev</a>
+                        <a v-if="image.previd"  @click="emitPrev" :href="'#' + image.previd">prev</a>
                     </div>
                     <div>
-                        <a v-if="image.nextid" @click="emitNext" :href="'#' + image.nextid">next</a>
-                        <!-- <span v-if="nextid" @click="emitNext">next</span> -->
+                        <a v-if="image.nextid"  @click="emitNext" :href="'#' + image.nextid">next</a>
                     </div>
                     <div>
                         <span @click="closeModal" id="close">X</span>
@@ -88,13 +99,14 @@
                 </div>
 
                 <form id="comment-form">
-                    <h3>Add a comment</h3>
+                    <h3>add a comment</h3>
                     <input v-model="username" type="text" name="username" placeholder="username">
                     <input v-model="comment" type="text" name="comment" placeholder="comment">
                     <button @click.prevent="submitComment">submit</button>
                 </form>
 
-                <div id="comments">
+                <h3>comments</h3>
+                <div v-if="comments" id="comments">
                     <div class="comment" v-for="comment in comments">
                         <h3>{{comment.comment}}</h3>
                         <p>{{comment.username}}</p>

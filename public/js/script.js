@@ -2,7 +2,7 @@
 (function() {
     Vue.component("my-component", {
         template: "#my-component",
-        props: ["id", "valid"],
+        props: ["id", "valid", "tag"],
         data: function() {
             return {
                 comments: [],
@@ -26,7 +26,10 @@
             getData: function() {
                 var me = this;
 
-                axios.post("/data", { id: me.id })
+                axios.post("/data", {
+                    id: me.id,
+                    tag: me.tag
+                })
                     .then(function(response) {
                         console.log("response.data:", response.data);
                         if (response.data[0]) {
@@ -140,9 +143,10 @@
                             addEventListener("hashchange", function() {
                                 if (!location.hash) {
                                     me.handleClose();
+                                    me.tag = "";
                                     me.getImages(false);
                                 } else if (Number.isInteger(parseInt(location.hash.slice(1)))) {
-                                    me.tag = null;
+                                    // me.tag = null;
                                     me.id = location.hash.slice(1);
                                 } else {
                                     me.tag = location.hash.slice(1);
@@ -156,6 +160,7 @@
             },
 
             submitImage: function() {
+
                 var formData = new FormData();
                 formData.append("title", this.title);
                 formData.append("description", this.description);
@@ -164,16 +169,10 @@
                 formData.append("file", this.file);
 
                 var me = this;
-
                 axios.post("/upload", formData)
                     .then(function(response) {
                         console.log("response from POST /upload:", response);
-                        me.title = "";
-                        me.username = "";
-                        me.description = "";
-                        me.tags = "";
-                        me.file = null;
-
+                        me.resetInputs(me);
                         me.images.unshift(response.data);
                     })
                     .catch(function(error) {
@@ -193,7 +192,11 @@
             handleClose: function() {
                 this.valid = null;
                 this.id = null;
-                history.replaceState(null, null, " ");
+                if (!this.tag) {
+                    history.replaceState(null, null, " ");
+                } else {
+                    history.replaceState(null, null, "#"+this.tag);
+                }
             },
 
             getMoreImages: function() {
@@ -251,6 +254,21 @@
 
             handleValid: function() {
                 this.valid = true;
+            },
+
+            resetInputs: function() {
+                this.title = "";
+                this.username = "";
+                this.description = "";
+                this.tags = "";
+                this.file = null;
+            },
+
+            reset: function() {
+                this.id = "",
+                this.tag = "",
+                this.handleClose();
+                this.getImages();
             }
         }
     });

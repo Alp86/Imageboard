@@ -3,7 +3,7 @@ const app = express();
 const {
     getImages, insertImage, deleteImage, getImage, getComments,
     insertComment, getMoreImages, insertTags, getTags,
-    getImagesByTag, getMoreImagesByTag
+    getImagesByTag, getMoreImagesByTag, getImageByTag
 } = require("./db");
 
 const multer = require('multer');
@@ -61,7 +61,6 @@ app.post("/images", (req, res) => {
                 console.log("error in getImages:", err);
             });
     }
-
 });
 
 app.post("/upload", uploader.single("file"), s3.upload, (req, res) => {
@@ -120,23 +119,43 @@ app.post("/upload", uploader.single("file"), s3.upload, (req, res) => {
 
 app.post("/data", (req, res) => {
 
-    const imageId = req.body.id;
+    const { id, tag } = req.body;
+    console.log(req.body);
 
-    Promise.all([
-        getImage(imageId),
-        getComments(imageId),
-        getTags(imageId)
-    ])
-        .then(results => {
-            const image = results[0].rows[0];
-            const comments = results[1].rows;
-            const tags = results[2].rows;
-            console.log("tags:", tags);
-            res.json([image, comments, tags]);
-        })
-        .catch(error => {
-            console.log("error in Promise.all:", error);
-        });
+    if (tag) {
+        Promise.all([
+            getImageByTag(id, tag),
+            getComments(id),
+            getTags(id)
+        ])
+            .then(results => {
+                const image = results[0].rows[0];
+                const comments = results[1].rows;
+                const tags = results[2].rows;
+                console.log("tags:", tags);
+                res.json([image, comments, tags]);
+            })
+            .catch(error => {
+                console.log("error in Promise.all:", error);
+            });
+    } else {
+        Promise.all([
+            getImage(id),
+            getComments(id),
+            getTags(id)
+        ])
+            .then(results => {
+                const image = results[0].rows[0];
+                const comments = results[1].rows;
+                const tags = results[2].rows;
+                console.log("tags:", tags);
+                res.json([image, comments, tags]);
+            })
+            .catch(error => {
+                console.log("error in Promise.all:", error);
+            });
+    }
+
 });
 
 app.post("/comment", (req, res) => {
@@ -197,16 +216,16 @@ app.post("/delete", s3.deleteImage, (req, res) => {
         });
 });
 
-app.post("/imagesbytag", (req, res) => {
-    const { tag } = req.body;
-    console.log("/imagesbytag request for:", tag);
-    getImagesByTag(tag)
-        .then( ({rows}) => {
-            res.json(rows);
-        })
-        .catch(error => {
-            console.log("error in getImagesByTag:", error);
-        });
-});
+// app.post("/imagesbytag", (req, res) => {
+//     const { tag } = req.body;
+//     console.log("/imagesbytag request for:", tag);
+//     getImagesByTag(tag)
+//         .then( ({rows}) => {
+//             res.json(rows);
+//         })
+//         .catch(error => {
+//             console.log("error in getImagesByTag:", error);
+//         });
+// });
 
 app.listen(8080, () => console.log("server up and running.."));

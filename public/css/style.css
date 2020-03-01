@@ -27,6 +27,7 @@ header {
     max-width: 1326px;
     padding: 0 20px;
     align-items: center;
+    cursor: pointer;
 }
 
 #title {
@@ -59,10 +60,16 @@ header {
     display: flex;
 }
 
+
 #image-container {
     display: flex;
     flex-wrap: wrap;
     max-width: 1326px;
+}
+
+#image-container a {
+    text-decoration: none;
+    color: black;
 }
 
 .image-card {
@@ -72,6 +79,10 @@ header {
     margin: 10px;
     background-color: #fafafa;
     border: solid 1px lightgrey;
+}
+
+.image-card:hover {
+    background-color: lightgrey;
 }
 
 .image-card p {
@@ -152,4 +163,84 @@ header {
 
 .comment {
     border-bottom: solid 1px lightgrey;
+}
+
+
+.inputfile {
+	width: 0.1px;
+	height: 0.1px;
+	opacity: 0;
+	overflow: hidden;
+	position: absolute;
+	z-index: -1;
+}
+
+.inputfile + label {
+    font-size: 14px;
+    border: solid 1px lightgrey;
+    border-radius: 5px;
+    padding: 5px;
+    display: inline-block;
+    width: 100px;
+    text-align: center;
+    margin: 0 10px;
+}
+
+.inputfile:focus + label,
+.inputfile + label:hover {
+    border-color: white;
+    background-color: grey;
+    color: white;
+}
+
+.inputfile + label {
+	cursor: pointer; /* "hand" cursor */
+}
+
+.inputfile:focus + label {
+	outline: 1px dotted #000;
+	outline: -webkit-focus-ring-color auto 5px;
+}
+
+.inputfile + label * {
+	pointer-events: none;
+}
+
+.inputs {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.inputs input {
+    margin: 0 10px;
+    border: solid 1px lightgrey;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+
+#inputs {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px 0;
+}
+
+#upload-button {
+    width: 100px;
+    text-align: center;
+    margin: 0 10px;
+    border-radius: 5px;
+    border: solid 1px lightgrey;
+    background-color: transparent;
+    padding: 5px;
+    font-size: 14px;
+}
+
+#upload-button:hover {
+    border-color: white;
+    background-color: grey;
+    color: white;
 }
